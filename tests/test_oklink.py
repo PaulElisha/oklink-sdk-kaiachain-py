@@ -1,27 +1,36 @@
 from src.oklink_py.protocol import ProtocolType
-from src.oklink_py.oklink import Oklink
 from src.oklink_py.config import Config
-import pprint
+from src.oklink_py.oklink import Oklink
+import pytest
+import requests
 
-oklink = Oklink(Config.api_key or "")
 
-# Test get addressInfo
-try:
+# Mocking requests.get to avoid actual API calls during testing
+class MockResponse:
+    @staticmethod
+    def json():
+        return {"mock_key": "mock_response"}
+
+def mock_requests_get(*args, **kwargs):
+    return MockResponse()
+
+@pytest.fixture
+def oklink():
+    return Oklink(Config.api_key)
+
+def test_address_info(monkeypatch, oklink):
+    monkeypatch.setattr(requests, "get", mock_requests_get)
     result = oklink.address_info(Config.test1)
-    pprint.pprint(result, depth=None)
-except Exception as error:
-    print(error)
+    assert result == {"mock_key": "mock_response"}
 
-# Test get addressActiveChain
-try:
+def test_address_active_chain(monkeypatch, oklink):
+    monkeypatch.setattr(requests, "get", mock_requests_get)
     result = oklink.address_active_chain(Config.test1)
-    pprint.pprint(result, depth=None)
-except Exception as error:
-    print(error)
+    assert result == {"mock_key": "mock_response"}
 
-# Test get addressBalance
-try:
+def test_address_token_balance(monkeypatch, oklink):
+    monkeypatch.setattr(requests, "get", mock_requests_get)
     result = oklink.address_token_balance(Config.test1, ProtocolType.token_20)
-    pprint.pprint(result, depth=None)
-except Exception as error:
-    print(error)
+    assert result == {"mock_key": "mock_response"}
+
+# TODO: Add more tests for other methods in oklink.py
